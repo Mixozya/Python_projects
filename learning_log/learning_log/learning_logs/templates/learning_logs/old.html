@@ -1,0 +1,127 @@
+base.html
+<p>
+    <a href="{% url 'learning_logs:index' %}">Learning Log</a> -
+    <a href="{% url 'learning_logs:topics' %}">Topics</a> -
+    {% if user.is_authenticated %}
+        Hello, {{ user.username }}.
+        <a href="{% url 'users:logout' %}">log out</a>
+    {% else %}
+        <a href="{% url 'users:register' %}">Register</a> -
+        <a href="{% url 'users:login' %}">log in</a>
+    {% endif %}
+</p>
+{% block content %}{% endblock content %}
+
+
+index.html
+{% extends 'learning_logs/base.html' %}
+{% block content %}
+<p>Learning Log helps you keep track of your learning, for any topic you're
+learning about.</p>
+{% endblock content%}
+
+
+login.html
+{% extends "learning_logs/base.html" %}
+{% block content %}
+{% if form.errors %}
+<p>Your username and password didn't match. Please try again.</p>
+{% endif %}
+<form method="post" action="{% url 'users:login' %}">
+{% csrf_token %}
+{{ form.as_p }}
+<button name="submit">log in</button>
+<input type="hidden" name="next"
+value="{% url 'learning_logs:index' %}" />
+</form>
+{% endblock content %}
+
+
+topics.html
+{% extends "learning_logs/base.html" %}
+{% block content %}
+<p>Topics</p>
+<ul>
+{% for topic in topics %}
+<li>
+<a href="{% url 'learning_logs:topic' topic.id %}">{{ topic }}</a>
+</li>
+{% empty %}
+<li>No topics have been added yet.</li>
+{% endfor %}
+</ul>
+<a href="{% url 'learning_logs:new_topic' %}">Add a new topic:</a>
+{% endblock content %}
+
+
+topic.html
+{% extends 'learning_logs/base.html' %}
+{% block content %}
+<p>Topic: {{ topic }}</p>
+<p>Entries:</p>
+<p>
+<a href="{% url 'learning_logs:new_entry' topic.id %}">add new entry</a>
+</p>
+<ul>
+{% for entry in entries %}
+<li>
+    <p>{{ entry.date_added|date:'M d, Y H:i' }}</p>
+    <p>{{ entry.text|linebreaks }}</p>
+    <p><a href="{% url 'learning_logs:edit_entry' entry.id %}">Edit entry</a></p>
+</li>
+{% empty %}
+<li>There are no entries for this topic yet.</li>
+{% endfor %}
+</ul>
+{% endblock content %}
+
+
+edit_entry.html
+{% extends "learning_logs/base.html" %}
+{% block content %}
+<p><a href="{% url 'learning_logs:topic' topic.id %}">{{ topic }}</a></p>
+<p>Edit entry:</p>
+<form action="{% url 'learning_logs:edit_entry' entry.id %}" method='post'>
+{% csrf_token %}
+{{ form.as_p }}
+<button name="submit">save changes</button>
+</form>
+{% endblock content %}
+
+
+new_entry.html
+{% extends "learning_logs/base.html" %}
+{% block content %}
+<p><a href="{% url 'learning_logs:topic' topic.id %}">{{ topic }}</a></p>
+<p>Add a new entry:</p>
+<form action="{% url 'learning_logs:new_entry' topic.id %}" method='post'>
+{% csrf_token %}
+{{ form.as_p }}
+<button name='submit'>add entry</button>
+</form>
+{% endblock content %}
+
+
+new_topic.html
+{% extends "learning_logs/base.html" %}
+{% block content %}
+<p>Add a new topic:</p>
+<form action="{% url 'learning_logs:new_topic' %}" method='post'>
+{% csrf_token %}
+{{ form.as_p }}
+<button name="submit">add topic</button>
+</form>
+{% endblock content %}
+
+
+register.html
+{% extends "learning_logs/base.html" %}
+{% block content %}
+<form method="post" action="{% url 'users:register' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button name="submit">register</button>
+    <input type="hidden" name="next" value="{% url 'learning_logs:index' %}" />
+</form>
+{% endblock content %}
